@@ -1,0 +1,2185 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ylj测试教材 - 教材目录 - 九学王内容中台</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/element-plus/dist/index.css"
+    />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/element-plus/dist/index.full.js"></script>
+    <script src="https://unpkg.com/sortablejs@1.15.2/Sortable.min.js"></script>
+    <style>
+      html,
+      body,
+      #app {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
+          sans-serif;
+        background: linear-gradient(
+          135deg,
+          #e8eaff 0%,
+          #f0eaff 50%,
+          #ffeef5 100%
+        );
+        color: #333;
+        font-size: 14px;
+      }
+
+      .el-container {
+        height: 100vh;
+      }
+
+      /* 顶部导航 */
+      .top-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fff;
+        border-bottom: 1px solid #e8eaf6;
+        padding: 0 20px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #222;
+      }
+
+      .brand-logo {
+        width: 28px;
+        height: 28px;
+        background: #5b8ff9;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .top-header .el-menu.el-menu--horizontal {
+        border-bottom: none;
+        background: transparent;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      /* 侧边栏 */
+      .sidebar {
+        background: #f7f8ff;
+        border-right: 1px solid #e8eaf6;
+      }
+
+      .sidebar .el-menu {
+        border-right: none;
+        background: transparent;
+      }
+
+      /* 主内容 */
+      .main {
+        padding: 20px;
+      }
+
+      .content-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(100, 100, 200, 0.08);
+        padding: 24px 32px;
+        min-height: calc(100vh - 120px);
+      }
+
+      .title-row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .main-title {
+        font-size: 22px;
+        font-weight: 600;
+        color: #222;
+      }
+
+      .meta {
+        color: #888;
+        font-size: 13px;
+      }
+
+      .meta .label {
+        color: #aaa;
+      }
+
+      .filter-section {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin: 20px 0 16px;
+      }
+
+      .delete-body {
+        padding: 0;
+      }
+
+      .delete-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 16px;
+      }
+
+      .delete-options {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .delete-options .el-radio {
+        margin-left: 0;
+        padding-left: 0;
+      }
+
+      .delete-options .el-radio__input {
+        margin-left: 0;
+      }
+
+      .filter-left {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .filter-label {
+        color: #666;
+        font-size: 14px;
+        margin-right: 4px;
+      }
+
+      .scene-filter .el-radio {
+        margin-right: 16px;
+      }
+
+      .scene-filter .el-radio__input {
+        display: none;
+      }
+
+      .scene-filter .el-radio__label {
+        padding-left: 0 !important;
+        font-size: 14px;
+        color: #666;
+      }
+
+      .scene-filter .el-radio.is-checked .el-radio__label {
+        color: #5b8ff9;
+        font-weight: 600;
+      }
+
+      .scene-filter .el-radio:hover .el-radio__label {
+        color: #5b8ff9;
+      }
+
+      .action-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .action-bar .action-left,
+      .action-bar .action-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .action-bar .btn-icon {
+        display: inline-flex;
+        vertical-align: middle;
+      }
+
+      /* 树状目录：去除表格外框 / 斑马纹 / 行分隔线，但保留表头 */
+      .el-table {
+        --el-table-row-hover-bg-color: #f5f7fa;
+        --el-table-border-color: transparent;
+        --el-table-bg-color: transparent;
+        font-size: 14px;
+        color: #333;
+        background: transparent;
+      }
+
+      /* 表头：浅灰蓝底色块 + 灰字，底部一条浅色分隔线（参考目标图） */
+      .el-table th.el-table__cell {
+        font-weight: 500;
+        color: #606266;
+        height: 44px;
+        padding: 0 12px;
+        background: #f5f7fa;
+        border-top: none;
+        border-bottom: 1px solid #e8eaf0;
+      }
+
+      /* 去掉 el-table 自带的外框线与顶部底线 */
+      .el-table::before,
+      .el-table::after,
+      .el-table__inner-wrapper::before,
+      .el-table__inner-wrapper::after {
+        display: none;
+      }
+
+      .el-table tr {
+        background: transparent;
+      }
+
+      .el-table td.el-table__cell {
+        padding: 8px;
+        background: transparent;
+        /* 行与行之间仅保留一条极浅分隔线（参考目标样式） */
+        border-bottom: 1px solid #f2f4f7;
+      }
+
+      .el-table .el-table__row:hover > td.el-table__cell {
+        background: #f5f7fa;
+      }
+
+      /* 层级缩进引导线（虚线）：对齐上级展开图标中心，呈现树的层级关系 */
+      .el-table td.el-table__cell:first-child .cell {
+        overflow: visible;
+      }
+
+      .el-table .el-table__indent {
+        position: relative;
+        flex: none;
+      }
+
+      .el-table .el-table__indent::before {
+        content: "";
+        position: absolute;
+        left: 8px;
+        top: -10px;
+        bottom: -10px;
+        border-left: 1px dashed #d0d3dc;
+      }
+
+      /* 展开/收起图标：蓝色圆形 + / − */
+      .el-table .el-table__expand-icon {
+        position: relative;
+        width: 20px;
+        height: 20px;
+        margin-right: 6px;
+        border-radius: 50%;
+        background: #3f7ef7;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        /* 覆盖默认箭头的旋转动画 */
+        transform: none;
+        transition: none;
+      }
+
+      .el-table .el-table__expand-icon:hover {
+        background: #5b8ff9;
+      }
+
+      /* 隐藏默认箭头，用伪元素绘制 + / − */
+      .el-table .el-table__expand-icon .el-icon {
+        display: none;
+      }
+
+      /* 横线：始终显示，展开后即为 − */
+      .el-table .el-table__expand-icon::before {
+        content: "";
+        position: absolute;
+        left: 4px;
+        right: 4px;
+        top: 50%;
+        height: 1.6px;
+        border-radius: 1px;
+        transform: translateY(-50%);
+        background: #fff;
+      }
+
+      /* 竖线：收起时与横线组成 + */
+      .el-table .el-table__expand-icon::after {
+        content: "";
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        left: 50%;
+        width: 1.6px;
+        border-radius: 1px;
+        transform: translateX(-50%);
+        background: #fff;
+      }
+
+      .el-table .el-table__expand-icon--expanded::after {
+        display: none;
+      }
+
+      /* 基础操作列 */
+      .el-table .el-button.is-link {
+        padding: 0;
+        height: auto;
+        font-size: 14px;
+      }
+
+      /* 操作列：按钮横向排列并用 gap 控制间距（tooltip 包裹的删除按钮也能生效） */
+      .el-table td.el-table__cell:last-child .cell {
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .el-table .el-button.is-link.el-button--primary {
+        color: #5b8ff9;
+      }
+
+      .el-table .el-button.is-link.el-button--danger {
+        color: #ff4d4f;
+      }
+
+      .el-table .el-button.is-link.el-button--danger.is-disabled,
+      .el-table .el-button.is-link.el-button--danger:disabled {
+        color: #c0c4cc;
+        cursor: not-allowed;
+        /* 禁用态不再接收鼠标事件，交由外层包裹元素触发 tooltip */
+        pointer-events: none;
+      }
+
+      .op-disabled-wrap {
+        display: inline-flex;
+        align-items: center;
+        cursor: not-allowed;
+      }
+
+      .el-table .cell {
+        line-height: 22px;
+      }
+
+      /* 名称列：展开/收起图标与章节名称保持在同一行 */
+      .el-table td.el-table__cell:first-child .cell {
+        display: flex;
+        align-items: center;
+      }
+
+      .el-table td.el-table__cell:first-child .cell .el-input {
+        flex: 1;
+        min-width: 0;
+        width: auto;
+      }
+
+      /* 名称列行内编辑输入框：占满单元格；默认无边框，呈现为纯文本节点 */
+      .el-table .cell .el-input {
+        width: 100%;
+      }
+
+      /* 名称输入框常显：浅灰边框 + 白底，无需 hover 即呈现 */
+      .el-table .cell .el-input .el-input__wrapper {
+        box-shadow: 0 0 0 1px #dcdfe6 inset;
+        background: #fff;
+        padding: 1px 10px;
+        border-radius: 4px;
+        transition: box-shadow 0.15s;
+      }
+
+      .el-table .cell .el-input .el-input__inner {
+        height: 28px;
+        line-height: 28px;
+      }
+
+      /* hover / 聚焦时边框转为蓝色 */
+      .el-table .cell .el-input:hover .el-input__wrapper,
+      .el-table .cell .el-input.is-focus .el-input__wrapper {
+        box-shadow: 0 0 0 1px #a0cfff inset;
+        background: #fff;
+      }
+
+      /* 层级区分：父级（含子章节）加粗深色，子级常规色 */
+      .el-table .el-table__row.is-branch .cell .el-input .el-input__inner,
+      .el-table .el-table__row.is-branch .cell .tree-node-name {
+        font-weight: 600;
+        color: #303133;
+      }
+
+      .el-table .el-table__row.is-leaf .cell .el-input .el-input__inner,
+      .el-table .el-table__row.is-leaf .cell .tree-node-name {
+        font-weight: 400;
+        color: #606266;
+      }
+
+      /* 只读目录（题库目录 / 教材知识树目录）的名称：纯文本节点 */
+      .el-table td.el-table__cell:first-child .cell .tree-node-name {
+        flex: 1;
+        min-width: 0;
+        height: 28px;
+        line-height: 28px;
+        padding-left: 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* 拖拽手柄 */
+      .drag-handle {
+        cursor: grab !important;
+        padding: 0 4px;
+      }
+
+      .drag-handle:hover span {
+        color: #5b8ff9 !important;
+      }
+
+      .drag-handle:active {
+        cursor: grabbing !important;
+      }
+
+      /* 拖拽视觉（参考 course-list）：蓝色插入参考线（上/下）+ 拖拽原位半透明 */
+      .el-table__row.drop-prev > td {
+        box-shadow: inset 0 2px 0 0 #1890ff;
+      }
+
+      .el-table__row.drop-next > td {
+        box-shadow: inset 0 -2px 0 0 #1890ff;
+      }
+
+      /* 放到目标目录子级下：整行浅蓝高亮 */
+      .el-table__row.drop-target > td.el-table__cell {
+        background-color: #ecf5ff !important;
+      }
+
+      .el-table__row.drag-ghost {
+        opacity: 0.35;
+      }
+
+      /* 拖拽残影：只显示源目录名称，无边框无底色 */
+      .drag-float-ghost {
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 3000;
+        pointer-events: none;
+        max-width: 320px;
+        padding: 0 6px;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 28px;
+        color: #303133;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        opacity: 0.55;
+      }
+
+      /* 拖拽进行中：禁止选中文本，光标保持抓手 */
+      body.tree-dragging {
+        user-select: none;
+        cursor: grabbing;
+      }
+
+      body.tree-dragging .el-table__row:hover > td.el-table__cell {
+        background: transparent;
+      }
+
+      /* 抽屉树中禁用勾选的节点（已挂载试题 / 知识点） */
+      .el-tree-node.is-disabled .el-tree-node__label,
+      .el-tree .el-tree-node__content.is-disabled .el-tree-node__label {
+        color: #a8abb2;
+        cursor: not-allowed;
+      }
+
+      /* 题库目录关联区 */
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+
+      .panel-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #303133;
+      }
+
+      .qb-block {
+        margin-top: 4px;
+      }
+
+      .drawer-custom-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #ebeef5;
+        margin-bottom: 16px;
+      }
+
+      .drawer-header-main {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .drawer-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #303133;
+        line-height: 1.4;
+        padding-right: 12px;
+        white-space: nowrap;
+      }
+
+      .drawer-tip {
+        color: #888;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .drawer-close {
+        padding: 0;
+        height: auto;
+        color: #606266;
+      }
+
+      .drawer-close:hover {
+        color: #5b8ff9;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="app">
+      <el-container>
+        <!-- 顶部导航 -->
+        <el-header class="top-header" height="56px">
+          <div class="brand">
+            <span class="brand-logo">九</span>
+            <span>九学王内容中台</span>
+          </div>
+          <el-menu mode="horizontal" :default-active="'1'">
+            <el-menu-item index="1">知识体系</el-menu-item>
+            <el-menu-item index="2">属性与...</el-menu-item>
+            <el-menu-item index="3">映射...</el-menu-item>
+            <el-menu-item index="4">内容资...</el-menu-item>
+            <el-menu-item index="5">开放...</el-menu-item>
+          </el-menu>
+          <div class="header-right">
+            <el-button text>接口文档</el-button>
+            <el-button text>工作台</el-button>
+            <el-avatar style="background: #d9e6ff; color: #5b8ff9"
+              >易</el-avatar
+            >
+          </div>
+        </el-header>
+
+        <el-container>
+          <!-- 侧边栏 -->
+          <el-aside width="200px" class="sidebar">
+            <el-menu :default-active="'1-1'">
+              <el-sub-menu index="1">
+                <template #title>教材管理</template>
+                <el-menu-item index="1-1">教材列表</el-menu-item>
+              </el-sub-menu>
+              <el-sub-menu index="2">
+                <template #title>学科知识体系</template>
+              </el-sub-menu>
+              <el-sub-menu index="3">
+                <template #title>考点知识体系</template>
+              </el-sub-menu>
+              <el-sub-menu index="4">
+                <template #title>教材知识体系</template>
+              </el-sub-menu>
+            </el-menu>
+          </el-aside>
+
+          <!-- 主内容 -->
+          <el-main class="main">
+            <div class="content-card">
+              <!-- 面包屑 -->
+              <el-breadcrumb separator="/">
+                <el-breadcrumb-item>教材管理</el-breadcrumb-item>
+                <el-breadcrumb-item>教材列表</el-breadcrumb-item>
+                <el-breadcrumb-item>ylj测试教材</el-breadcrumb-item>
+                <el-breadcrumb-item>教材目录</el-breadcrumb-item>
+              </el-breadcrumb>
+
+              <!-- 标题区 -->
+              <div style="margin-top: 16px">
+                <div class="title-row">
+                  <h1 class="main-title">ylj测试教材</h1>
+                  <span class="meta"
+                    ><span class="label">ID：</span>2100403436108382210</span
+                  >
+                  <span class="meta"
+                    ><span class="label">中台版本：</span>1.3</span
+                  >
+                </div>
+                <el-tabs v-model="activeTab">
+                  <el-tab-pane label="基本信息" name="basic"></el-tab-pane>
+                  <el-tab-pane label="教材目录" name="catalog"></el-tab-pane>
+                  <el-tab-pane
+                    label="题库目录"
+                    name="questionbank"
+                  ></el-tab-pane>
+                  <el-tab-pane
+                    label="教材知识树目录"
+                    name="knowledge"
+                  ></el-tab-pane>
+                </el-tabs>
+              </div>
+
+              <!-- 教材目录 -->
+              <template v-if="activeTab === 'catalog'">
+                <!-- 操作按钮 -->
+                <div class="action-bar">
+                  <div class="action-left">
+                    <el-button type="primary" @click="openDialog()">
+                      <svg
+                        class="btn-icon"
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        fill="currentColor"
+                        style="margin-right: 4px"
+                      >
+                        <path d="M12 5v7H5v1h7v7h1v-7h7v-1h-7V5h-1z" />
+                      </svg>
+                      添加章节
+                    </el-button>
+                    <el-button @click="downloadTemplate()">
+                      <svg
+                        class="btn-icon"
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        fill="currentColor"
+                        style="margin-right: 4px"
+                      >
+                        <path
+                          d="M12 15l-4.5-4.5H11V4h2v6.5h3.5L12 15zm-7 3v1h14v-1H5z"
+                        />
+                      </svg>
+                      下载导入模板
+                    </el-button>
+                  </div>
+                  <div class="action-right">
+                    <el-input
+                      v-model="searchKeyword"
+                      placeholder="请输入章节名称"
+                      clearable
+                      style="width: 220px"
+                    >
+                      <template #prefix>
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="14"
+                          height="14"
+                          fill="#909399"
+                        >
+                          <path
+                            d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 0 0 9.5 3 6.5 6.5 0 0 0 3 9.5a6.5 6.5 0 0 0 6.5 6.5c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                          />
+                        </svg>
+                      </template>
+                    </el-input>
+                    <el-button @click="exportTree()">
+                      <svg
+                        class="btn-icon"
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        fill="currentColor"
+                        style="margin-right: 4px"
+                      >
+                        <path
+                          d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"
+                        />
+                      </svg>
+                      导出目录
+                    </el-button>
+                  </div>
+                </div>
+
+                <!-- 表格 -->
+                <el-table
+                  ref="tableRef"
+                  :data="filteredData"
+                  indent="28"
+                  row-key="id"
+                  :tree-props="{ children: 'children' }"
+                  :expand-row-keys="expandedKeys"
+                  :row-class-name="rowClassName"
+                  style="width: 100%"
+                >
+                  <el-table-column
+                    prop="name"
+                    label="目录名称"
+                    min-width="280"
+                  >
+                    <template #default="{ row }">
+                      <el-input
+                        v-model="row.name"
+                        placeholder="请输入章节名称"
+                        @blur="saveRowName(row)"
+                      ></el-input>
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    prop="level"
+                    label="目录层级"
+                    width="120"
+                    align="right"
+                  ></el-table-column>
+                  <el-table-column label="基础操作" width="300" align="center" header-align="center">
+                    <template #default="{ row }">
+                      <el-button link type="primary" @click="addChild(row)"
+                        >添加子章节</el-button
+                      >
+                      <el-tooltip
+                        :content="canDeleteTextbook(row) ? '' : '该章节已被业务引用，无法删除，请先解除关联'"
+                        :disabled="canDeleteTextbook(row)"
+                        placement="top"
+                      >
+                        <span
+                          :class="{ 'op-disabled-wrap': !canDeleteTextbook(row) }"
+                        >
+                          <el-button
+                            link
+                            type="danger"
+                            :disabled="!canDeleteTextbook(row)"
+                            @click="deleteRow(row)"
+                            >删除</el-button
+                          >
+                        </span>
+                      </el-tooltip>
+                      <el-button
+                        link
+                        class="drag-handle"
+                        title="按住拖拽排序"
+                        @click.stop
+                      >
+                        <span style="color: #909399">
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 14 14"
+                            fill="currentColor"
+                            style="vertical-align: middle"
+                          >
+                            <circle cx="3" cy="3" r="1.5" />
+                            <circle cx="8" cy="3" r="1.5" />
+                            <circle cx="3" cy="7" r="1.5" />
+                            <circle cx="8" cy="7" r="1.5" />
+                            <circle cx="3" cy="11" r="1.5" />
+                            <circle cx="8" cy="11" r="1.5" />
+                          </svg>
+                        </span>
+                      </el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </template>
+
+              <!-- 题库目录 -->
+              <template v-else-if="activeTab === 'questionbank'">
+                <div class="qb-block">
+                  <div class="panel-header">
+                    <el-button type="primary" @click="openAssociateDrawer()">
+                      <svg
+                        class="btn-icon"
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        fill="currentColor"
+                        style="margin-right: 4px"
+                      >
+                        <path d="M12 5v7H5v1h7v7h1v-7h7v-1h-7V5h-1z" />
+                      </svg>
+                      添加章节
+                    </el-button>
+                    <el-input
+                      v-model="qbSearch"
+                      placeholder="请输入章节名称"
+                      clearable
+                      style="width: 220px"
+                    >
+                      <template #prefix>
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="14"
+                          height="14"
+                          fill="#909399"
+                        >
+                          <path
+                            d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 0 0 9.5 3 6.5 6.5 0 0 0 3 9.5a6.5 6.5 0 0 0 6.5 6.5c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                          />
+                        </svg>
+                      </template>
+                    </el-input>
+                  </div>
+
+                  <el-table
+                    v-if="filteredAssociatedTree.length"
+                    :data="filteredAssociatedTree"
+                    indent="28"
+                    row-key="id"
+                    :tree-props="{ children: 'children' }"
+                    :expand-row-keys="associatedExpanded"
+                    :row-class-name="rowClassName"
+                    style="width: 100%"
+                  >
+                    <el-table-column
+                      prop="name"
+                      label="目录名称"
+                      min-width="280"
+                    >
+                      <template #default="{ row }">
+                        <span class="tree-node-name">{{ row.name }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column
+                      prop="level"
+                      label="目录层级"
+                      width="120"
+                      align="right"
+                    ></el-table-column>
+                    <el-table-column label="基础操作" width="200" align="center" header-align="center">
+                      <template #default="{ row }">
+                        <el-tooltip
+                          :content="
+                            canDeleteQuestion(row)
+                              ? ''
+                              : '该章节已挂载试题，无法删除，请先解除关联'
+                          "
+                          :disabled="canDeleteQuestion(row)"
+                          placement="top"
+                        >
+                          <span
+                            :class="{ 'op-disabled-wrap': !canDeleteQuestion(row) }"
+                          >
+                            <el-button
+                              link
+                              type="danger"
+                              :disabled="!canDeleteQuestion(row)"
+                              @click="removeFromCatalog(row, 'question')"
+                              >删除</el-button
+                            >
+                          </span>
+                        </el-tooltip>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                  <el-empty
+                    v-else
+                    :description="
+                      qbSearch
+                        ? '未找到匹配的目录'
+                        : '暂无教材目录，请先在「教材目录」中添加章节'
+                    "
+                  ></el-empty>
+                </div>
+              </template>
+
+              <!-- 教材知识树目录 -->
+              <template v-else-if="activeTab === 'knowledge'">
+                <div class="qb-block">
+                  <div class="panel-header">
+                    <el-button type="primary" @click="openKnowledgeDrawer()">
+                      <svg
+                        class="btn-icon"
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        fill="currentColor"
+                        style="margin-right: 4px"
+                      >
+                        <path d="M12 5v7H5v1h7v7h1v-7h7v-1h-7V5h-1z" />
+                      </svg>
+                      添加章节
+                    </el-button>
+                    <el-input
+                      v-model="knowledgeSearch"
+                      placeholder="请输入章节名称"
+                      clearable
+                      style="width: 220px"
+                    >
+                      <template #prefix>
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="14"
+                          height="14"
+                          fill="#909399"
+                        >
+                          <path
+                            d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 0 0 9.5 3 6.5 6.5 0 0 0 3 9.5a6.5 6.5 0 0 0 6.5 6.5c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                          />
+                        </svg>
+                      </template>
+                    </el-input>
+                  </div>
+
+                  <el-table
+                    v-if="filteredKnowledgeTree.length"
+                    :data="filteredKnowledgeTree"
+                    indent="28"
+                    row-key="id"
+                    :tree-props="{ children: 'children' }"
+                    :expand-row-keys="knowledgeExpanded"
+                    :row-class-name="rowClassName"
+                    style="width: 100%"
+                  >
+                    <el-table-column
+                      prop="name"
+                      label="目录名称"
+                      min-width="280"
+                    >
+                      <template #default="{ row }">
+                        <span class="tree-node-name">{{ row.name }}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column
+                      prop="level"
+                      label="目录层级"
+                      width="120"
+                      align="right"
+                    ></el-table-column>
+                    <el-table-column label="基础操作" width="200" align="center" header-align="center">
+                      <template #default="{ row }">
+                        <el-tooltip
+                          :content="canDeleteKnowledge(row) ? '' : '该章节已挂载知识点，无法删除'"
+                          :disabled="canDeleteKnowledge(row)"
+                          placement="top"
+                        >
+                          <span>
+                            <el-button
+                              link
+                              type="danger"
+                              :disabled="!canDeleteKnowledge(row)"
+                              @click="removeFromCatalog(row, 'knowledge')"
+                              >删除</el-button
+                            >
+                          </span>
+                        </el-tooltip>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                  <el-empty
+                    v-else
+                    :description="
+                      knowledgeSearch
+                        ? '未找到匹配的目录'
+                        : '暂无教材目录，请先在「教材目录」中添加章节'
+                    "
+                  ></el-empty>
+                </div>
+              </template>
+            </div>
+          </el-main>
+        </el-container>
+      </el-container>
+
+      <!-- 添加 / 修改章节 弹窗 -->
+      <el-dialog v-model="dialogVisible" :title="dialogTitle" width="520px">
+        <el-form
+          ref="formRef"
+          :model="form"
+          :rules="rules"
+          label-position="top"
+        >
+          <el-form-item label="章节名称" prop="name">
+            <el-input
+              v-model="form.name"
+              placeholder="请输入章节名称"
+              maxlength="150"
+              show-word-limit
+            ></el-input>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="confirmSave">确定</el-button>
+        </template>
+      </el-dialog>
+
+      <!-- 删除确认弹窗 -->
+      <el-dialog v-model="deleteDialogVisible" title="提示" width="400px">
+        <div class="delete-body">
+          <div class="delete-title">删除层级数据</div>
+          <el-radio-group v-model="deleteMode" class="delete-options">
+            <el-radio label="self">只删除该层级数据</el-radio>
+            <el-radio label="subtree">删除该层级及所有子层级数据</el-radio>
+          </el-radio-group>
+        </div>
+        <template #footer>
+          <el-button @click="deleteDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="confirmDelete">确定</el-button>
+        </template>
+      </el-dialog>
+
+      <!-- 关联教材目录 侧边抽屉 -->
+      <el-drawer
+        v-model="drawerVisible"
+        direction="rtl"
+        size="50%"
+        :with-header="false"
+      >
+        <div class="drawer-custom-header">
+          <div class="drawer-header-main">
+            <div class="drawer-title">添加章节</div>
+            <div class="drawer-tip">勾选教材章节纳入题库目录</div>
+          </div>
+          <el-button text class="drawer-close" @click="drawerVisible = false">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path
+                d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4l-6.3 6.3-1.4-1.4L9.2 12 2.9 5.7l1.4-1.4L12 10.6l6.3-6.3z"
+              />
+            </svg>
+          </el-button>
+        </div>
+        <div class="filter-section" style="margin: 0 0 12px">
+          <el-input
+            v-model="catalogSearch"
+            placeholder="搜索教材目录"
+            clearable
+            style="width: 100%"
+          >
+            <template #prefix>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="#909399">
+                <path
+                  d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 0 0 9.5 3 6.5 6.5 0 0 0 3 9.5a6.5 6.5 0 0 0 6.5 6.5c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                />
+              </svg>
+            </template>
+          </el-input>
+        </div>
+        <el-tree
+          ref="catalogTreeRef"
+          :data="tableData"
+          :props="questionTreeProps"
+          node-key="id"
+          show-checkbox
+          check-strictly
+          :default-checked-keys="drawerCheckedKeys"
+          :default-expand-all="true"
+          :filter-node-method="filterCatalogNode"
+        >
+          <template #default="{ data }">
+            <span :title="questionNodeTitle(data)">{{ data.name }}</span>
+          </template>
+        </el-tree>
+        <template #footer>
+          <el-button @click="drawerVisible = false">取消</el-button>
+          <el-button type="primary" @click="confirmAssociate">确定</el-button>
+        </template>
+      </el-drawer>
+
+      <!-- 关联教材知识树目录 侧边抽屉 -->
+      <el-drawer
+        v-model="knowledgeDrawerVisible"
+        direction="rtl"
+        size="50%"
+        :with-header="false"
+      >
+        <div class="drawer-custom-header">
+          <div class="drawer-header-main">
+            <div class="drawer-title">添加章节</div>
+            <div class="drawer-tip">勾选教材章节纳入教材知识树目录</div>
+          </div>
+          <el-button
+            text
+            class="drawer-close"
+            @click="knowledgeDrawerVisible = false"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path
+                d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4l-6.3 6.3-1.4-1.4L9.2 12 2.9 5.7l1.4-1.4L12 10.6l6.3-6.3z"
+              />
+            </svg>
+          </el-button>
+        </div>
+        <div class="filter-section" style="margin: 0 0 12px">
+          <el-input
+            v-model="knowledgeCatalogSearch"
+            placeholder="搜索教材目录"
+            clearable
+            style="width: 100%"
+          >
+            <template #prefix>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="#909399">
+                <path
+                  d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 0 0 16 9.5 6.5 6.5 0 0 0 9.5 3 6.5 6.5 0 0 0 3 9.5a6.5 6.5 0 0 0 6.5 6.5c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                />
+              </svg>
+            </template>
+          </el-input>
+        </div>
+        <el-tree
+          ref="knowledgeTreeRef"
+          :data="tableData"
+          :props="knowledgeTreeProps"
+          node-key="id"
+          show-checkbox
+          check-strictly
+          :default-checked-keys="knowledgeDrawerCheckedKeys"
+          :default-expand-all="true"
+          :filter-node-method="filterCatalogNode"
+        >
+          <template #default="{ data }">
+            <span :title="knowledgeNodeTitle(data)">{{ data.name }}</span>
+          </template>
+        </el-tree>
+        <template #footer>
+          <el-button @click="knowledgeDrawerVisible = false">取消</el-button>
+          <el-button type="primary" @click="confirmKnowledgeAssociate"
+            >确定</el-button
+          >
+        </template>
+      </el-drawer>
+    </div>
+
+    <script>
+      const { createApp } = Vue;
+      const { ElMessage, ElMessageBox } = ElementPlus;
+
+      const STORAGE_KEY = "catalogData";
+
+      function getDefaultTableData() {
+        return [
+          {
+            id: "1",
+            name: "第一章 函数",
+            level: "一级章节",
+            scenes: ["knowledge", "question"],
+            children: [
+              {
+                id: "1-1",
+                name: "函数概念",
+                level: "二级章节",
+                scenes: ["knowledge", "question"],
+              },
+              {
+                id: "1-2",
+                name: "函数表示法",
+                level: "二级章节",
+                scenes: ["knowledge", "question"],
+              },
+              {
+                id: "1-3",
+                name: "函数性质",
+                level: "二级章节",
+                scenes: ["knowledge", "question"],
+              },
+            ],
+          },
+          {
+            id: "2",
+            name: "第二章 方程",
+            level: "一级章节",
+            scenes: ["knowledge", "question"],
+            children: [
+              {
+                id: "2-1",
+                name: "一元二次方程",
+                level: "二级章节",
+                scenes: ["knowledge", "question"],
+              },
+              {
+                id: "2-2",
+                name: "方程组",
+                level: "二级章节",
+                scenes: ["knowledge", "question"],
+              },
+            ],
+          },
+        ];
+      }
+
+      const VALID_SCENES = ["knowledge", "question"];
+
+      // 演示用：预设挂载了试题 / 知识点的章节
+      // "2-2"（方程组）为叶子章节，已挂载试题 -> 题库目录中其删除按钮禁用
+      const MOUNTED_QUESTIONS = ["2-2"];
+      // 兜底：按名称匹配，防止 localStorage 旧缓存中节点 id 与预设不一致
+      const MOUNTED_QUESTION_NAMES = ["方程组"];
+      const MOUNTED_KNOWLEDGE = ["1-1", "2-1"];
+
+      function sanitizeNodes(nodes) {
+        nodes.forEach((n) => {
+          if (Array.isArray(n.scenes))
+            n.scenes = n.scenes.filter((s) => VALID_SCENES.indexOf(s) !== -1);
+          // 确保挂载标记存在（按演示要求在指定章节上固定预设）
+          n.hasQuestion =
+            MOUNTED_QUESTIONS.indexOf(n.id) !== -1 ||
+            MOUNTED_QUESTION_NAMES.indexOf(n.name) !== -1;
+          n.hasKnowledge = MOUNTED_KNOWLEDGE.indexOf(n.id) !== -1;
+          if (n.children) sanitizeNodes(n.children);
+          // 抽屉树多选框的禁用态写进数据本身：
+          // 自身或子孙挂载了试题 -> 题库关联树中禁止取消勾选
+          n.questionDisabled =
+            !!n.hasQuestion ||
+            (n.children || []).some((c) => c.questionDisabled);
+          // 自身挂载了知识点 -> 知识树关联树中禁止取消勾选
+          n.knowledgeDisabled = !!n.hasKnowledge;
+        });
+        return nodes;
+      }
+
+      function loadTableData() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) return sanitizeNodes(JSON.parse(raw));
+        } catch (e) {}
+        return getDefaultTableData();
+      }
+
+      function saveTableData(data) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {}
+      }
+
+      // 题库目录关联关系持久化
+      const ASSOC_KEY = "catalogAssocData";
+
+      function collectAllIds(nodes, acc) {
+        nodes.forEach((n) => {
+          acc.push(n.id);
+          if (n.children) collectAllIds(n.children, acc);
+        });
+        return acc;
+      }
+
+      function loadAssocData() {
+        try {
+          const raw = localStorage.getItem(ASSOC_KEY);
+          if (raw !== null) return JSON.parse(raw);
+        } catch (e) {}
+        return null;
+      }
+
+      function saveAssocData(ids) {
+        try {
+          localStorage.setItem(ASSOC_KEY, JSON.stringify(ids));
+        } catch (e) {}
+      }
+
+      // 初始教材目录（仅读取一次）
+      const initialTableData = loadTableData();
+
+      // 关联关系初始化：有缓存则恢复，否则默认全部教材目录纳入题库目录
+      function initAssocIds() {
+        const saved = loadAssocData();
+        if (saved && Array.isArray(saved)) return saved;
+        return collectAllIds(initialTableData, []);
+      }
+
+      // 教材知识树目录关联关系持久化
+      const KNOWLEDGE_ASSOC_KEY = "catalogKnowledgeAssocData";
+
+      function loadKnowledgeAssocData() {
+        try {
+          const raw = localStorage.getItem(KNOWLEDGE_ASSOC_KEY);
+          if (raw !== null) return JSON.parse(raw);
+        } catch (e) {}
+        return null;
+      }
+
+      function saveKnowledgeAssocData(ids) {
+        try {
+          localStorage.setItem(KNOWLEDGE_ASSOC_KEY, JSON.stringify(ids));
+        } catch (e) {}
+      }
+
+      function initKnowledgeAssocIds() {
+        const saved = loadKnowledgeAssocData();
+        if (saved && Array.isArray(saved)) return saved;
+        return collectAllIds(initialTableData, []);
+      }
+
+      createApp({
+        data() {
+          return {
+            activeTab: "catalog",
+            sceneFilter: "all",
+            searchKeyword: "",
+            dialogVisible: false,
+            dialogTitle: "添加章节",
+            parentRow: null,
+            editTarget: null,
+            dragCleanup: null,
+            subRows: [],
+            deleteDialogVisible: false,
+            deleteMode: "self",
+            currentDeleteRow: null,
+            form: {
+              name: "",
+              scenes: [],
+            },
+            rules: {
+              name: [
+                { required: true, message: "请输入章节名称", trigger: "blur" },
+              ],
+            },
+            tableData: initialTableData,
+            drawerVisible: false,
+            drawerCheckedKeys: [],
+            catalogSearch: "",
+            relatedCatalogIds: initAssocIds(),
+            relatedKnowledgeIds: initKnowledgeAssocIds(),
+            qbSearch: "",
+            knowledgeSearch: "",
+            knowledgeDrawerVisible: false,
+            knowledgeDrawerCheckedKeys: [],
+            knowledgeCatalogSearch: "",
+          };
+        },
+        computed: {
+          filteredData() {
+            const scene = this.sceneFilter;
+            const kw = (this.searchKeyword || "").trim().toLowerCase();
+            if (scene === "all" && !kw) return this.tableData;
+            const filterNodes = (nodes) => {
+              const result = [];
+              nodes.forEach((n) => {
+                const children = n.children ? filterNodes(n.children) : [];
+                const sceneMatch = scene === "all" || n.scenes.includes(scene);
+                const nameMatch = !kw || n.name.toLowerCase().includes(kw);
+                // 当前节点满足场景与名称，或其后代有满足条件的，则保留
+                if ((sceneMatch && nameMatch) || children.length) {
+                  result.push(Object.assign({}, n, { children }));
+                }
+              });
+              return result;
+            };
+            return filterNodes(this.tableData);
+          },
+          expandedKeys() {
+            const keys = [];
+            const collect = (nodes) => {
+              nodes.forEach((n) => {
+                if (n.children && n.children.length) {
+                  keys.push(n.id);
+                  collect(n.children);
+                }
+              });
+            };
+            collect(this.filteredData);
+            return keys;
+          },
+          associatedTree() {
+            const sel = this.relatedCatalogIds;
+            const filterNodes = (nodes) => {
+              const result = [];
+              nodes.forEach((n) => {
+                const children = n.children ? filterNodes(n.children) : [];
+                const selfSelected = sel.indexOf(n.id) !== -1;
+                if (selfSelected || children.length) {
+                  // 只勾选父级而未勾选其子级时，父级作为独立节点展示（无 children），
+                  // 避免出现空的展开箭头，也不渲染未关联的子级
+                  const copy = Object.assign({}, n);
+                  if (children.length) copy.children = children;
+                  else delete copy.children;
+                  result.push(copy);
+                }
+              });
+              return result;
+            };
+            return filterNodes(this.tableData);
+          },
+          filteredAssociatedTree() {
+            const kw = (this.qbSearch || "").trim().toLowerCase();
+            if (!kw) return this.associatedTree;
+            return this.filterAssocNodes(this.associatedTree, kw);
+          },
+          associatedExpanded() {
+            const keys = [];
+            const collect = (nodes) => {
+              nodes.forEach((n) => {
+                if (n.children && n.children.length) {
+                  keys.push(n.id);
+                  collect(n.children);
+                }
+              });
+            };
+            collect(this.filteredAssociatedTree);
+            return keys;
+          },
+          knowledgeAssociatedTree() {
+            const sel = this.relatedKnowledgeIds;
+            const filterNodes = (nodes) => {
+              const result = [];
+              nodes.forEach((n) => {
+                const children = n.children ? filterNodes(n.children) : [];
+                const selfSelected = sel.indexOf(n.id) !== -1;
+                if (selfSelected || children.length) {
+                  const copy = Object.assign({}, n);
+                  if (children.length) copy.children = children;
+                  else delete copy.children;
+                  result.push(copy);
+                }
+              });
+              return result;
+            };
+            return filterNodes(this.tableData);
+          },
+          filteredKnowledgeTree() {
+            const kw = (this.knowledgeSearch || "").trim().toLowerCase();
+            if (!kw) return this.knowledgeAssociatedTree;
+            return this.filterAssocNodes(this.knowledgeAssociatedTree, kw);
+          },
+          knowledgeExpanded() {
+            const keys = [];
+            const collect = (nodes) => {
+              nodes.forEach((n) => {
+                if (n.children && n.children.length) {
+                  keys.push(n.id);
+                  collect(n.children);
+                }
+              });
+            };
+            collect(this.filteredKnowledgeTree);
+            return keys;
+          },
+          // 与列表中「删除按钮禁用」保持一致的禁用集合
+          questionDisabledIds() {
+            const ids = [];
+            const walk = (nodes) => {
+              nodes.forEach((n) => {
+                if (!this.canDeleteQuestion(n)) ids.push(n.id);
+                if (n.children) walk(n.children);
+              });
+            };
+            walk(this.associatedTree);
+            return ids;
+          },
+          knowledgeDisabledIds() {
+            const ids = [];
+            const walk = (nodes) => {
+              nodes.forEach((n) => {
+                if (!this.canDeleteKnowledge(n)) ids.push(n.id);
+                if (n.children) walk(n.children);
+              });
+            };
+            walk(this.knowledgeAssociatedTree);
+            return ids;
+          },
+          questionTreeProps() {
+            // 用数据字段（而非函数）驱动复选框禁用，确保树节点构造时即可读到
+            return {
+              label: "name",
+              disabled: "questionDisabled",
+            };
+          },
+          knowledgeTreeProps() {
+            return {
+              label: "name",
+              disabled: "knowledgeDisabled",
+            };
+          },
+        },
+        watch: {
+          tableData: {
+            deep: true,
+            handler(val) {
+              saveTableData(val);
+              this.$nextTick(() => this.initSortable());
+            },
+          },
+          relatedCatalogIds(val) {
+            saveAssocData(val);
+          },
+          relatedKnowledgeIds(val) {
+            saveKnowledgeAssocData(val);
+          },
+          catalogSearch(val) {
+            if (this.$refs.catalogTreeRef) {
+              this.$refs.catalogTreeRef.filter(val);
+            }
+          },
+        },
+        mounted() {
+          this.$nextTick(() => this.initSortable());
+        },
+        methods: {
+          sceneLabel(s) {
+            const map = { knowledge: "知识树", question: "题库" };
+            return map[s] || s;
+          },
+          sceneTagStyle(s) {
+            const map = {
+              knowledge: { color: "#52c41a", backgroundColor: "#f0f9eb" },
+              question: { color: "#5b8ff9", backgroundColor: "#e6f4ff" },
+            };
+            return map[s] || {};
+          },
+          findNode(list, id) {
+            for (let i = 0; i < list.length; i++) {
+              if (list[i].id === id) return list[i];
+              if (list[i].children) {
+                const r = this.findNode(list[i].children, id);
+                if (r) return r;
+              }
+            }
+            return null;
+          },
+          // 节点或其子孙是否挂载了试题
+          nodeHasQuestion(node) {
+            if (node.hasQuestion) return true;
+            if (node.children)
+              return node.children.some((c) => this.nodeHasQuestion(c));
+            return false;
+          },
+          // 节点或其子孙是否挂载了知识点
+          nodeHasKnowledge(node) {
+            if (node.hasKnowledge) return true;
+            if (node.children)
+              return node.children.some((c) => this.nodeHasKnowledge(c));
+            return false;
+          },
+          canDeleteQuestion(node) {
+            return !this.nodeHasQuestion(node);
+          },
+          canDeleteKnowledge(node) {
+            // 仅自身挂载知识点时禁止删除，子节点挂载不影响父级删除
+            return !node.hasKnowledge;
+          },
+          canDeleteTextbook(node) {
+            return !(this.nodeHasQuestion(node) || this.nodeHasKnowledge(node));
+          },
+          openDialog() {
+            this.parentRow = null;
+            this.editTarget = null;
+            this.dialogTitle = "添加章节";
+            this.form.name = "";
+            this.form.scenes = [];
+            this.dialogVisible = true;
+            this.$nextTick(() => {
+              if (this.$refs.formRef) this.$refs.formRef.clearValidate();
+            });
+          },
+          confirmSave() {
+            this.$refs.formRef.validate((valid) => {
+              if (!valid) return;
+              const name = this.form.name.trim();
+              const scenes = this.form.scenes.slice();
+              // 编辑模式：直接更新目标节点
+              if (this.editTarget) {
+                this.editTarget.name = name;
+                this.editTarget.scenes = scenes;
+                this.dialogVisible = false;
+                ElMessage.success("修改成功");
+                return;
+              }
+              // 新增模式
+              const node = {
+                id: "new-" + Date.now(),
+                name: name,
+                level: this.parentRow
+                  ? this.nextLevel(this.parentRow.level)
+                  : "一级章节",
+                scenes: scenes,
+                hasQuestion: false,
+                hasKnowledge: false,
+              };
+              if (this.parentRow) {
+                if (!this.parentRow.children) this.parentRow.children = [];
+                this.parentRow.children.push(node);
+              } else {
+                this.tableData.push(node);
+              }
+              // 自动同步：新增教材目录自动纳入题库目录与教材知识树目录
+              if (this.relatedCatalogIds.indexOf(node.id) === -1) {
+                this.relatedCatalogIds.push(node.id);
+              }
+              if (this.relatedKnowledgeIds.indexOf(node.id) === -1) {
+                this.relatedKnowledgeIds.push(node.id);
+              }
+              this.dialogVisible = false;
+              ElMessage.success("添加成功");
+            });
+          },
+          nextLevel(level) {
+            const map = {
+              一级章节: "二级章节",
+              二级章节: "三级章节",
+              三级章节: "四级章节",
+            };
+            return map[level] || "一级章节";
+          },
+          addChild(row) {
+            this.parentRow = row;
+            this.editTarget = null;
+            this.dialogTitle = "添加子章节";
+            this.form.name = "";
+            this.form.scenes = [];
+            this.dialogVisible = true;
+            this.$nextTick(() => {
+              if (this.$refs.formRef) this.$refs.formRef.clearValidate();
+            });
+          },
+          editRow(row) {
+            this.parentRow = null;
+            this.editTarget = row;
+            this.dialogTitle = "修改章节";
+            this.form.name = row.name;
+            this.form.scenes = row.scenes ? row.scenes.slice() : [];
+            this.dialogVisible = true;
+            this.$nextTick(() => {
+              if (this.$refs.formRef) this.$refs.formRef.clearValidate();
+            });
+          },
+          // 行内编辑章节名称：失焦自动保存
+          saveRowName(row) {
+            const src = this.findNode(this.tableData, row.id);
+            const name = (row.name || "").trim();
+            if (!name) {
+              // 置空恢复原值
+              if (src) row.name = src.name;
+              ElMessage.warning("章节名称不能为空");
+              return;
+            }
+            // 名称无改动时失焦静默返回
+            if (src) {
+              if (name === src.name) {
+                row.name = name;
+                return;
+              }
+              src.name = name;
+            }
+            row.name = name;
+            ElMessage.success("修改成功");
+          },
+          deleteRow(row) {
+            if (this.nodeHasQuestion(row) || this.nodeHasKnowledge(row)) return;
+            // 叶子节点：使用警告确认弹窗
+            if (!row.children || !row.children.length) {
+              ElMessageBox.confirm(
+                '确定要删除章节"' + row.name + '"吗？此操作不可恢复。',
+                "警告",
+                {
+                  type: "warning",
+                  confirmButtonText: "确定",
+                  cancelButtonText: "取消",
+                },
+              )
+                .then(() => {
+                  this.removeById(this.tableData, row.id);
+                  this.pruneAssoc();
+                  ElMessage.success("删除成功");
+                })
+                .catch(() => {});
+              return;
+            }
+            // 非叶子节点：使用层级删除弹窗
+            this.currentDeleteRow = row;
+            this.deleteMode = "self";
+            this.deleteDialogVisible = true;
+          },
+          confirmDelete() {
+            if (!this.currentDeleteRow) return;
+            if (this.deleteMode === "subtree") {
+              this.removeById(this.tableData, this.currentDeleteRow.id);
+            } else {
+              this.removeSelf(this.tableData, this.currentDeleteRow.id);
+            }
+            this.pruneAssoc();
+            this.deleteDialogVisible = false;
+            ElMessage.success("已删除");
+          },
+          removeById(list, id) {
+            for (let i = 0; i < list.length; i++) {
+              if (list[i].id === id) {
+                list.splice(i, 1);
+                return true;
+              }
+              if (list[i].children && this.removeById(list[i].children, id))
+                return true;
+            }
+            return false;
+          },
+          removeSelf(list, id) {
+            for (let i = 0; i < list.length; i++) {
+              if (list[i].id === id) {
+                const node = list[i];
+                if (node.children && node.children.length) {
+                  list.splice(i, 1, ...node.children);
+                } else {
+                  list.splice(i, 1);
+                }
+                return true;
+              }
+              if (list[i].children && this.removeSelf(list[i].children, id))
+                return true;
+            }
+            return false;
+          },
+          downloadTemplate() {
+            ElMessage.info("下载导入模板（演示）");
+          },
+          exportTree() {
+            const data = JSON.stringify(this.tableData, null, 2);
+            const blob = new Blob([data], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download =
+              "知识树_" + new Date().toISOString().slice(0, 10) + ".json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            ElMessage.success("导出成功");
+          },
+          rowClassName({ row }) {
+            const isBranch = row.children && row.children.length > 0;
+            return "row-id-" + row.id + (isBranch ? " is-branch" : " is-leaf");
+          },
+          // 题库目录 - 关联教材目录
+          openAssociateDrawer() {
+            this.drawerCheckedKeys = this.relatedCatalogIds.slice();
+            this.catalogSearch = "";
+            this.drawerVisible = true;
+            this.$nextTick(() => {
+              if (this.$refs.catalogTreeRef) {
+                // 每次打开按最新关联状态同步勾选，确保题库目录中已删除的章节在抽屉里为取消勾选态
+                this.$refs.catalogTreeRef.setCheckedKeys(
+                  this.drawerCheckedKeys,
+                );
+                this.$refs.catalogTreeRef.filter(this.catalogSearch);
+              }
+            });
+          },
+          confirmAssociate() {
+            const keys = this.$refs.catalogTreeRef
+              ? this.$refs.catalogTreeRef.getCheckedKeys()
+              : this.drawerCheckedKeys.slice();
+            // 已挂载试题的章节不允许解除关联，提交时强制保留
+            const merged = keys.concat(this.questionDisabledIds);
+            this.relatedCatalogIds = Array.from(new Set(merged)).filter(
+              (k) => typeof k === "string",
+            );
+            this.drawerVisible = false;
+            ElMessage.success("关联成功");
+          },
+          // 题库目录 / 教材知识树目录 删除（取消关联）
+          // kind: 'question' 题库目录，'knowledge' 教材知识树目录
+          removeFromCatalog(nodeOrId, kind) {
+            // 传入的是关联树中实际展示的节点（可能只勾选了父级、未勾选子级）
+            const node =
+              typeof nodeOrId === "string"
+                ? this.findNode(this.tableData, nodeOrId)
+                : nodeOrId;
+            if (!node) return;
+            if (kind === "question" && this.nodeHasQuestion(node)) {
+              ElMessage.warning("该章节已挂载试题，无法删除，请先解除关联");
+              return;
+            }
+            if (kind === "knowledge" && node.hasKnowledge) {
+              ElMessage.warning("该章节已挂载知识点，无法删除");
+              return;
+            }
+            const hasChild = node.children && node.children.length;
+            const msg = hasChild
+              ? "确定删除该章节及其子章节吗？"
+              : "确定删除该章节吗？";
+            ElMessageBox.confirm(msg, "提示", {
+              confirmButtonText: "确定",
+              cancelButtonText: "取消",
+              type: "warning",
+            })
+              .then(() => {
+                const toRemove = new Set();
+                const collect = (n) => {
+                  toRemove.add(n.id);
+                  if (n.children) n.children.forEach(collect);
+                };
+                collect(node);
+                const key =
+                  kind === "question"
+                    ? "relatedCatalogIds"
+                    : "relatedKnowledgeIds";
+                this[key] = this[key].filter((x) => !toRemove.has(x));
+                ElMessage.success("已删除");
+              })
+              .catch(() => {});
+          },
+          isAssociated(id) {
+            return this.relatedCatalogIds.indexOf(id) !== -1;
+          },
+          isKnowledgeAssociated(id) {
+            return this.relatedKnowledgeIds.indexOf(id) !== -1;
+          },
+          // 抽屉中节点的悬浮说明：与列表删除按钮禁用原因保持一致
+          questionNodeTitle(data) {
+            return this.questionDisabledIds.indexOf(data.id) !== -1
+              ? "该章节已挂载试题，无法删除，请先解除关联"
+              : "";
+          },
+          knowledgeNodeTitle(data) {
+            return this.knowledgeDisabledIds.indexOf(data.id) !== -1
+              ? "该章节已挂载知识点，无法删除"
+              : "";
+          },
+          openKnowledgeDrawer() {
+            this.knowledgeDrawerCheckedKeys = this.relatedKnowledgeIds.slice();
+            this.knowledgeCatalogSearch = "";
+            this.knowledgeDrawerVisible = true;
+            this.$nextTick(() => {
+              if (this.$refs.knowledgeTreeRef) {
+                // 每次打开按最新关联状态同步勾选，确保已删除的章节在抽屉里为取消勾选态
+                this.$refs.knowledgeTreeRef.setCheckedKeys(
+                  this.knowledgeDrawerCheckedKeys,
+                );
+                this.$refs.knowledgeTreeRef.filter(this.knowledgeCatalogSearch);
+              }
+            });
+          },
+          confirmKnowledgeAssociate() {
+            const keys = this.$refs.knowledgeTreeRef
+              ? this.$refs.knowledgeTreeRef.getCheckedKeys()
+              : this.knowledgeDrawerCheckedKeys.slice();
+            // 已挂载知识点的章节不允许解除关联，提交时强制保留
+            const merged = keys.concat(this.knowledgeDisabledIds);
+            this.relatedKnowledgeIds = Array.from(new Set(merged)).filter(
+              (k) => typeof k === "string",
+            );
+            this.knowledgeDrawerVisible = false;
+            ElMessage.success("关联成功");
+          },
+          // 删除教材目录后，清理已不存在的关联项，保持题库目录同步
+          pruneAssoc() {
+            const valid = new Set();
+            const collect = (nodes) => {
+              nodes.forEach((n) => {
+                valid.add(n.id);
+                if (n.children) collect(n.children);
+              });
+            };
+            collect(this.tableData);
+            this.relatedCatalogIds = this.relatedCatalogIds.filter((id) =>
+              valid.has(id),
+            );
+            this.relatedKnowledgeIds = this.relatedKnowledgeIds.filter((id) =>
+              valid.has(id),
+            );
+          },
+          filterCatalogNode(value, data) {
+            if (!value) return true;
+            return data.name.indexOf(value) !== -1;
+          },
+          // 关联树搜索：命中节点保留其完整子树（保持层级与删除按钮状态一致），
+          // 未命中但其后代命中的节点作为路径保留
+          filterAssocNodes(nodes, kw) {
+            const result = [];
+            nodes.forEach((n) => {
+              const matched = n.name.toLowerCase().indexOf(kw) !== -1;
+              if (matched) {
+                result.push(n);
+                return;
+              }
+              const children = n.children ? this.filterAssocNodes(n.children, kw) : [];
+              if (children.length) {
+                result.push(Object.assign({}, n, { children }));
+              }
+            });
+            return result;
+          },
+          getLevel(tr) {
+            const m = tr.className.match(/el-table__row--level-(\d+)/);
+            return m ? parseInt(m[1], 10) : 0;
+          },
+          initSortable() {
+            const tableEl = this.$refs.tableRef && this.$refs.tableRef.$el;
+            if (!tableEl) return;
+            const tbody = tableEl.querySelector(
+              ".el-table__body-wrapper tbody",
+            );
+            if (!tbody) return;
+            const _this = this;
+            // 移除上一次的监听，避免重复绑定
+            if (this.dragCleanup) {
+              this.dragCleanup();
+              this.dragCleanup = null;
+            }
+            // 清除拖拽时的蓝色标记
+            const clearMarks = () => {
+              tbody.querySelectorAll(".el-table__row").forEach((tr) => {
+                tr.classList.remove("drop-target", "drop-prev", "drop-next");
+              });
+            };
+            // 收集被拖章节的所有子章节行（紧随其后、层级更深的连续行）
+            const collectSubRows = (item) => {
+              const subs = [];
+              const level = _this.getLevel(item);
+              let sib = item.nextElementSibling;
+              while (
+                sib &&
+                sib.classList.contains("el-table__row") &&
+                _this.getLevel(sib) > level
+              ) {
+                subs.push(sib);
+                sib = sib.nextElementSibling;
+              }
+              return subs;
+            };
+            // 更新行的层级 class（el-table__row--level-N）
+            const setLevel = (tr, lv) => {
+              tr.className = tr.className.replace(
+                /el-table__row--level-\d+/,
+                "el-table__row--level-" + lv,
+              );
+            };
+            // 生成跟随鼠标的残影（只显示源目录名称的半透明文字）
+            const createGhost = (item, ev) => {
+              // 名称宿主：只读目录是 span，教材目录是 el-input
+              const host =
+                item.querySelector(".tree-node-name") ||
+                item.querySelector(".cell input");
+              const name = host
+                ? "value" in host
+                  ? host.value
+                  : host.textContent.trim()
+                : "";
+              const rect = (host || item).getBoundingClientRect();
+              const wrap = document.createElement("div");
+              wrap.className = "drag-float-ghost";
+              wrap.textContent = name;
+              // 先定位再插入，避免残影在左上角闪一下
+              wrap.style.left = rect.left + "px";
+              wrap.style.top = rect.top + "px";
+              document.body.appendChild(wrap);
+              return {
+                el: wrap,
+                offsetX: ev.clientX - rect.left,
+                offsetY: ev.clientY - rect.top,
+              };
+            };
+            const onMouseDown = (e) => {
+              if (e.button !== 0) return;
+              const handle = e.target.closest
+                ? e.target.closest(".drag-handle")
+                : null;
+              if (!handle || !tbody.contains(handle)) return;
+              const item = handle.closest("tr.el-table__row");
+              if (!item) return;
+              e.preventDefault();
+              e.stopPropagation();
+              const level = _this.getLevel(item);
+              // 子章节跟随：开始拖拽前先记录整棵子树
+              _this.subRows = collectSubRows(item);
+              const block = [item].concat(_this.subRows);
+              let target = null;
+              item.classList.add("drag-ghost");
+              document.body.classList.add("tree-dragging");
+              const ghost = createGhost(item, e);
+              const onMouseMove = (ev) => {
+                target = null;
+                clearMarks();
+                // 残影跟随鼠标
+                ghost.el.style.left = ev.clientX - ghost.offsetX + "px";
+                ghost.el.style.top = ev.clientY - ghost.offsetY + "px";
+                const rows = Array.from(
+                  tbody.querySelectorAll(".el-table__row"),
+                );
+                let related = null;
+                // 命中鼠标所在的行，作为插入参照行
+                for (const r of rows) {
+                  const rect = r.getBoundingClientRect();
+                  if (ev.clientY >= rect.top && ev.clientY <= rect.bottom) {
+                    related = r;
+                    break;
+                  }
+                }
+                // 拖到自己的子树范围内不允许放置，避免父子自包含
+                if (!related || block.indexOf(related) !== -1) return;
+                const rect = related.getBoundingClientRect();
+                // 三段式判定：上 30% 放到其前，下 30% 放到其后，中间 40% 放到其子级下
+                const ratio = (ev.clientY - rect.top) / rect.height;
+                if (ratio >= 0.3 && ratio <= 0.7) {
+                  target = { related, into: true };
+                  related.classList.add("drop-target");
+                  return;
+                }
+                const after = ratio > 0.7;
+                // 插入点后一行层级更深时不允许放置，避免目标行原有子章节被误挂到被拖章节下
+                const nearRow = after ? related.nextElementSibling : related;
+                if (
+                  nearRow &&
+                  nearRow.classList.contains("el-table__row") &&
+                  _this.getLevel(nearRow) > level
+                ) {
+                  return;
+                }
+                target = { related, after };
+                related.classList.add(after ? "drop-next" : "drop-prev");
+              };
+              const finish = () => {
+                document.removeEventListener("mousemove", onMouseMove);
+                document.removeEventListener("mouseup", finish);
+                document.body.classList.remove("tree-dragging");
+                item.classList.remove("drag-ghost");
+                clearMarks();
+                if (ghost.el.parentNode) {
+                  ghost.el.parentNode.removeChild(ghost.el);
+                }
+                const subs = _this.subRows;
+                _this.subRows = [];
+                // 只在松手后真正调整顺序：整棵子树一次性落到目标位置
+                if (target && target.into) {
+                  // 放到目标目录的子级下：整块挪到目标行最后一个后代行之后，层级 +1
+                  const related = target.related;
+                  const tLevel = _this.getLevel(related);
+                  let last = related;
+                  let next = last.nextElementSibling;
+                  while (
+                    next &&
+                    next.classList.contains("el-table__row") &&
+                    _this.getLevel(next) > tLevel
+                  ) {
+                    last = next;
+                    next = last.nextElementSibling;
+                  }
+                  const delta = tLevel + 1 - level;
+                  const moved = [item].concat(subs);
+                  moved.forEach((tr) =>
+                    tbody.insertBefore(tr, last.nextElementSibling),
+                  );
+                  if (delta)
+                    moved.forEach((tr) =>
+                      setLevel(tr, _this.getLevel(tr) + delta),
+                    );
+                  _this.rebuildTableData(
+                    Array.from(tbody.querySelectorAll(".el-table__row")),
+                  );
+                } else if (target) {
+                  const { related, after } = target;
+                  const ref = after ? related.nextElementSibling : related;
+                  const inPlace = after
+                    ? item.previousElementSibling === related
+                    : item.nextElementSibling === related;
+                  if (!inPlace) {
+                    [item].concat(subs).forEach((tr) =>
+                      tbody.insertBefore(tr, ref),
+                    );
+                    _this.rebuildTableData(
+                      Array.from(tbody.querySelectorAll(".el-table__row")),
+                    );
+                  }
+                }
+              };
+              document.addEventListener("mousemove", onMouseMove);
+              document.addEventListener("mouseup", finish);
+            };
+            tbody.addEventListener("mousedown", onMouseDown);
+            this.dragCleanup = () =>
+              tbody.removeEventListener("mousedown", onMouseDown);
+          },
+          rebuildTableData(rows) {
+            const idMap = {};
+            // 先把拖拽前的父子关系做快照：DOM 行里没渲染到的节点（折叠 / 被搜索过滤）
+            // 仍要按原来的结构挂回去，不能因为没渲染就丢失
+            const parentOf = {};
+            const walkSnapshot = (list, parentId) => {
+              list.forEach((n) => {
+                idMap[n.id] = n;
+                parentOf[n.id] = parentId;
+                if (n.children) walkSnapshot(n.children, n.id);
+              });
+            };
+            walkSnapshot(this.tableData, null);
+            const root = { children: [] };
+            const stack = [{ level: -1, node: root }];
+            const placed = {};
+            const newIdMap = {};
+            rows.forEach((tr) => {
+              const m = tr.className.match(/row-id-([^\s]+)/);
+              if (!m) return;
+              const node = idMap[m[1]];
+              if (!node) return;
+              node.children = [];
+              const level = this.getLevel(tr);
+              while (stack.length && stack[stack.length - 1].level >= level)
+                stack.pop();
+              const parent = stack[stack.length - 1].node;
+              if (!parent.children) parent.children = [];
+              parent.children.push(node);
+              placed[node.id] = true;
+              newIdMap[node.id] = node;
+              stack.push({ level, node });
+            });
+            // 把未渲染成行的节点按快照的父子关系逐层挂回，保证一个都不丢
+            let pending = Object.keys(idMap).filter((id) => !placed[id]);
+            while (pending.length) {
+              const rest = [];
+              pending.forEach((id) => {
+                const pid = parentOf[id];
+                const parentNode = pid ? newIdMap[pid] : root;
+                if (!parentNode) {
+                  rest.push(id);
+                  return;
+                }
+                const node = idMap[id];
+                if (!parentNode.children) parentNode.children = [];
+                if (!parentNode.children.some((c) => c.id === id))
+                  parentNode.children.push(node);
+                newIdMap[id] = node;
+                placed[id] = true;
+              });
+              // 本轮没有任何进展时兜底挂到根，绝不允许节点被丢弃
+              if (rest.length === pending.length) {
+                rest.forEach((id) => {
+                  const node = idMap[id];
+                  if (!root.children.some((c) => c.id === id))
+                    root.children.push(node);
+                  newIdMap[id] = node;
+                  placed[id] = true;
+                });
+                break;
+              }
+              pending = rest;
+            }
+            // 按新的深度刷新「目录层级」字段，三个目录保持一致的层级显示
+            const LEVEL_NAMES = [
+              "一级章节",
+              "二级章节",
+              "三级章节",
+              "四级章节",
+            ];
+            const applyLevel = (list, depth) => {
+              list.forEach((n) => {
+                n.level =
+                  LEVEL_NAMES[depth] || LEVEL_NAMES[LEVEL_NAMES.length - 1];
+                if (n.children && n.children.length)
+                  applyLevel(n.children, depth + 1);
+              });
+            };
+            applyLevel(root.children, 0);
+            this.tableData = root.children;
+          },
+        },
+      })
+        .use(ElementPlus)
+        .mount("#app");
+    </script>
+  </body>
+</html>
