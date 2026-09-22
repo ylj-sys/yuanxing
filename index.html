@@ -749,6 +749,13 @@
                     label="层级"
                     width="120"
                     align="right"
+                    :formatter="formatLevel"
+                  ></el-table-column>
+                  <el-table-column
+                    prop="id"
+                    label="ID"
+                    width="140"
+                    align="right"
                   ></el-table-column>
                   <el-table-column label="基础操作" width="300" align="center" header-align="center">
                     <template #default="{ row }">
@@ -862,6 +869,13 @@
                       label="层级"
                       width="120"
                       align="right"
+                      :formatter="formatLevel"
+                    ></el-table-column>
+                    <el-table-column
+                      prop="id"
+                      label="ID"
+                      width="140"
+                      align="right"
                     ></el-table-column>
                     <el-table-column label="操作" width="200" align="center" header-align="center">
                       <template #default="{ row }">
@@ -962,6 +976,13 @@
                       label="层级"
                       width="120"
                       align="right"
+                      :formatter="formatLevel"
+                    ></el-table-column>
+                    <el-table-column
+                      prop="id"
+                      label="ID"
+                      width="140"
+                      align="right"
                     ></el-table-column>
                     <el-table-column label="操作" width="200" align="center" header-align="center">
                       <template #default="{ row }">
@@ -970,7 +991,9 @@
                           :disabled="canDeleteKnowledge(row)"
                           placement="top"
                         >
-                          <span>
+                          <span
+                            :class="{ 'op-disabled-wrap': !canDeleteKnowledge(row) }"
+                          >
                             <el-button
                               link
                               type="danger"
@@ -1013,6 +1036,10 @@
               maxlength="150"
               show-word-limit
             ></el-input>
+          </el-form-item>
+          <el-form-item label="同步章节">
+            <el-checkbox v-model="form.syncQuestion">题库目录</el-checkbox>
+            <el-checkbox v-model="form.syncKnowledge">教材知识树目录</el-checkbox>
           </el-form-item>
         </el-form>
         <template #footer>
@@ -1163,53 +1190,32 @@
 
       const STORAGE_KEY = "catalogData";
 
+      // 生成 6 位随机数字 ID（保证唯一，不足补位）
+      function genId() {
+        return String(Math.floor(100000 + Math.random() * 900000));
+      }
+
       function getDefaultTableData() {
+        const leaf = (name) => ({
+          id: genId(),
+          name,
+          level: "二级章节",
+          scenes: ["knowledge", "question"],
+        });
         return [
           {
-            id: "1",
+            id: genId(),
             name: "第一章 函数",
             level: "一级章节",
             scenes: ["knowledge", "question"],
-            children: [
-              {
-                id: "1-1",
-                name: "函数概念",
-                level: "二级章节",
-                scenes: ["knowledge", "question"],
-              },
-              {
-                id: "1-2",
-                name: "函数表示法",
-                level: "二级章节",
-                scenes: ["knowledge", "question"],
-              },
-              {
-                id: "1-3",
-                name: "函数性质",
-                level: "二级章节",
-                scenes: ["knowledge", "question"],
-              },
-            ],
+            children: [leaf("函数概念"), leaf("函数表示法"), leaf("函数性质")],
           },
           {
-            id: "2",
+            id: genId(),
             name: "第二章 方程",
             level: "一级章节",
             scenes: ["knowledge", "question"],
-            children: [
-              {
-                id: "2-1",
-                name: "一元二次方程",
-                level: "二级章节",
-                scenes: ["knowledge", "question"],
-              },
-              {
-                id: "2-2",
-                name: "方程组",
-                level: "二级章节",
-                scenes: ["knowledge", "question"],
-              },
-            ],
+            children: [leaf("一元二次方程"), leaf("方程组")],
           },
         ];
       }
@@ -1222,6 +1228,8 @@
       // 兜底：按名称匹配，防止 localStorage 旧缓存中节点 id 与预设不一致
       const MOUNTED_QUESTION_NAMES = ["方程组"];
       const MOUNTED_KNOWLEDGE = ["1-1", "2-1"];
+      // 兜底：按名称匹配（默认数据 ID 为随机生成，无法用固定 ID 命中）
+      const MOUNTED_KNOWLEDGE_NAMES = ["函数概念", "一元二次方程"];
 
       function sanitizeNodes(nodes) {
         nodes.forEach((n) => {
@@ -1231,7 +1239,9 @@
           n.hasQuestion =
             MOUNTED_QUESTIONS.indexOf(n.id) !== -1 ||
             MOUNTED_QUESTION_NAMES.indexOf(n.name) !== -1;
-          n.hasKnowledge = MOUNTED_KNOWLEDGE.indexOf(n.id) !== -1;
+          n.hasKnowledge =
+            MOUNTED_KNOWLEDGE.indexOf(n.id) !== -1 ||
+            MOUNTED_KNOWLEDGE_NAMES.indexOf(n.name) !== -1;
           if (n.children) sanitizeNodes(n.children);
           // 抽屉树多选框的禁用态写进数据本身：
           // 自身或子孙挂载了试题 -> 题库关联树中禁止取消勾选
@@ -1249,7 +1259,7 @@
           const raw = localStorage.getItem(STORAGE_KEY);
           if (raw) return sanitizeNodes(JSON.parse(raw));
         } catch (e) {}
-        return getDefaultTableData();
+        return sanitizeNodes(getDefaultTableData());
       }
 
       function saveTableData(data) {
@@ -1334,6 +1344,8 @@
             form: {
               name: "",
               scenes: [],
+              syncQuestion: true,
+              syncKnowledge: true,
             },
             rules: {
               name: [
@@ -1572,6 +1584,8 @@
             this.dialogTitle = "添加章节";
             this.form.name = "";
             this.form.scenes = [];
+            this.form.syncQuestion = true;
+            this.form.syncKnowledge = true;
             this.dialogVisible = true;
             this.$nextTick(() => {
               if (this.$refs.formRef) this.$refs.formRef.clearValidate();
@@ -1584,15 +1598,18 @@
               const scenes = this.form.scenes.slice();
               // 编辑模式：直接更新目标节点
               if (this.editTarget) {
-                this.editTarget.name = name;
-                this.editTarget.scenes = scenes;
+                const t = this.editTarget;
+                t.name = name;
+                t.scenes = scenes;
+                // 按勾选同步至对应目录（取消勾选则解除关联）
+                this.setCatalogSync(t.id, this.form.syncQuestion, this.form.syncKnowledge);
                 this.dialogVisible = false;
                 ElMessage.success("修改成功");
                 return;
               }
               // 新增模式
               const node = {
-                id: "new-" + Date.now(),
+                id: genId(),
                 name: name,
                 level: this.parentRow
                   ? this.nextLevel(this.parentRow.level)
@@ -1607,16 +1624,30 @@
               } else {
                 this.tableData.push(node);
               }
-              // 自动同步：新增教材目录自动纳入题库目录与教材知识树目录
-              if (this.relatedCatalogIds.indexOf(node.id) === -1) {
+              // 按勾选同步至对应目录
+              if (this.form.syncQuestion && this.relatedCatalogIds.indexOf(node.id) === -1) {
                 this.relatedCatalogIds.push(node.id);
               }
-              if (this.relatedKnowledgeIds.indexOf(node.id) === -1) {
+              if (this.form.syncKnowledge && this.relatedKnowledgeIds.indexOf(node.id) === -1) {
                 this.relatedKnowledgeIds.push(node.id);
               }
               this.dialogVisible = false;
               ElMessage.success("添加成功");
             });
+          },
+          setCatalogSync(id, toQuestion, toKnowledge) {
+            if (toQuestion) {
+              if (this.relatedCatalogIds.indexOf(id) === -1)
+                this.relatedCatalogIds.push(id);
+            } else {
+              this.relatedCatalogIds = this.relatedCatalogIds.filter((x) => x !== id);
+            }
+            if (toKnowledge) {
+              if (this.relatedKnowledgeIds.indexOf(id) === -1)
+                this.relatedKnowledgeIds.push(id);
+            } else {
+              this.relatedKnowledgeIds = this.relatedKnowledgeIds.filter((x) => x !== id);
+            }
           },
           nextLevel(level) {
             const map = {
@@ -1626,12 +1657,36 @@
             };
             return map[level] || "一级章节";
           },
+          formatLevel(row, column, cellValue) {
+            const map = {
+              一: "1",
+              二: "2",
+              三: "3",
+              四: "4",
+              五: "5",
+              六: "6",
+              七: "7",
+              八: "8",
+              九: "9",
+              十: "10",
+            };
+            if (typeof cellValue !== "string") return cellValue;
+            return cellValue
+              .replace(
+                /^[一二三四五六七八九十]+/,
+                (m) => m.split("").map((ch) => map[ch] || ch).join("")
+              )
+              .replace(/章节$/, "")
+              .replace(/级$/, " 级");
+          },
           addChild(row) {
             this.parentRow = row;
             this.editTarget = null;
             this.dialogTitle = "添加子章节";
             this.form.name = "";
             this.form.scenes = [];
+            this.form.syncQuestion = true;
+            this.form.syncKnowledge = true;
             this.dialogVisible = true;
             this.$nextTick(() => {
               if (this.$refs.formRef) this.$refs.formRef.clearValidate();
@@ -1643,6 +1698,8 @@
             this.dialogTitle = "修改章节";
             this.form.name = row.name;
             this.form.scenes = row.scenes ? row.scenes.slice() : [];
+            this.form.syncQuestion = this.relatedCatalogIds.indexOf(row.id) !== -1;
+            this.form.syncKnowledge = this.relatedKnowledgeIds.indexOf(row.id) !== -1;
             this.dialogVisible = true;
             this.$nextTick(() => {
               if (this.$refs.formRef) this.$refs.formRef.clearValidate();
